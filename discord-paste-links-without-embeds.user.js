@@ -15,8 +15,8 @@
   // Config for the script
   // NOTE: Changes are only re-evaluated when discord is completely refreshed
   const CONFIG = {
-    replaceStandaloneLinks: true,
-    replaceLinksInMessage: true,
+    replaceStandaloneLinks: true, // will affect "https://stackoverflow.com", but not "check out https://stackoverflow.com"; default: true
+    replaceLinksInMessage: true, // will affect "check out https://stackoverflow.com", but not "https://stackoverflow.com"; default: true
   };
 
   if ([CONFIG.replaceStandaloneLinks, CONFIG.replaceLinksInMessage].every((bool) => bool === false)) return;
