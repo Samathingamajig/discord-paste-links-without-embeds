@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Discord Paste Links without Embeds
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.2.1
 // @description  Wraps URLs with angle brackets (<https://example.com>) when pasting into discord to avoid link embeds
 // @author       Samathingamajig
 // @match        https://discord.com/*
@@ -32,7 +32,9 @@
   const linkRegexGlobal = () => new RegExp(linkRegexBase(), "g" + (CONFIG.ignoreCaseInLink ? "i" : ""));
 
   const pasteEventListener = (event) => {
-    if (["textarea", "input", "br"].includes(event.target.nodeName.toLowerCase())) return;
+    if (["textarea", "br"].includes(event.target.nodeName.toLowerCase())) return;
+    if (event.target.nodeName.toLowerCase() === "input" && !event.target.ariaLabel?.startsWith("Message @"))
+      return console.log("broke out");
 
     const paste = event.clipboardData?.getData("text");
     if (!paste || paste.length === 0) return;
@@ -48,11 +50,25 @@
     };
 
     const isLink = linkRegexSingle().test(paste);
-
+    let message = paste;
     if (isLink && CONFIG.replaceStandaloneLinks) {
-      event.clipboardData.getData = newGetData(`<${paste}>`);
+      message = `<${paste}>`;
     } else if (!isLink && CONFIG.replaceLinksInMessage) {
-      event.clipboardData.getData = newGetData(paste.replaceAll(linkRegexGlobal(), "<$1>"));
+      message = paste.replaceAll(linkRegexGlobal(), "<$1>");
+    }
+
+    if (event.target.nodeName.toLowerCase() === "input") {
+      event.target.value =
+        event.target.value.slice(0, event.target.selectionStart) +
+        message +
+        event.target.value.slice(event.target.selectionEnd);
+      event.target.setSelectionRange(
+        event.target.selectionStart + message.length,
+        event.target.selectionStart + message.length,
+      );
+      event.preventDefault();
+    } else {
+      event.clipboardData.getData = newGetData(message);
     }
   };
 
