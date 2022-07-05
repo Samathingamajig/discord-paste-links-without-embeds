@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Discord Paste Links without Embeds
 // @namespace    http://tampermonkey.net/
-// @version      0.2.1
+// @version      0.2.2
 // @description  Wraps URLs with angle brackets (<https://example.com>) when pasting into discord to avoid link embeds
 // @author       Samathingamajig
 // @match        https://discord.com/*
@@ -33,15 +33,14 @@
 
   const pasteEventListener = (event) => {
     if (["textarea", "br"].includes(event.target.nodeName.toLowerCase())) return;
-    if (event.target.nodeName.toLowerCase() === "input" && !event.target.ariaLabel?.startsWith("Message @"))
-      return console.log("broke out");
+    if (event.target.nodeName.toLowerCase() === "input" && !event.target.ariaLabel?.startsWith("Message @")) return;
 
     const paste = event.clipboardData?.getData("text");
     if (!paste || paste.length === 0) return;
     const oldGetData = event.clipboardData?.getData;
     const newGetData = (textReturn) => (format) => {
       switch (format.toLowerCase()) {
-        case "test":
+        case "text":
         case "text/plain":
           return textReturn;
         default:
